@@ -13,4 +13,9 @@ class DataType(StrEnum):
 
 class AlphaVantageFunction:
     def __init__(self, **kwargs) -> None:
-        self.params: dict = {"outputsize": OutputSize.FULL, "datatype": DataType.JSON}
+        stock: str = kwargs.get("stock", None)
+        self.params: dict = {
+            "outputsize": OutputSize.FULL,
+            "datatype": DataType.JSON,
+            "symbol": stock,
+        }
