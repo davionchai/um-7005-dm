@@ -19,7 +19,9 @@ def main(source_args: argparse.Namespace):
     alpha_vantage_function_module: ModuleType = importlib.import_module(
         f"functions.{args.alpha_vantage_function}"
     )
-    alpha_vantage_function = alpha_vantage_function_module.AlphaVantageFunction()
+    alpha_vantage_function = alpha_vantage_function_module.AlphaVantageFunction(
+        stock=args.stock
+    )
 
     query: AlphaVantageQuery = AlphaVantageQuery(
         api_key=args.api_key, alpha_vantage_function=args.alpha_vantage_function
@@ -44,9 +46,9 @@ if __name__ == "__main__":
     loaded_functions: List[Path] = Path(f"{PARENT_DIR}/functions").iterdir()
     functions_to_ignore: set = {"__pycache__", "__init__.py"}
     available_functions: List[str] = [
-        str(functions.name).lower()
+        f"{functions.stem}".lower()
         for functions in loaded_functions
-        if functions not in functions_to_ignore
+        if functions.name not in functions_to_ignore
     ]
 
     parser: argparse.ArgumentParser = argparse.ArgumentParser()
