@@ -1,15 +1,18 @@
 import argparse
-import logging
+import csv
 import importlib
-import json
+import logging
+import pandas as pd
 
 from pathlib import Path
 from requests.models import Response
 from typing import List
 from types import ModuleType
 
+from constants.datatype import DataType
 from models.arguments import ArgumentModel
 from utils.logger import log_setup
+from utils.pathfinder import dir_builder, csv_path_builder
 from utils.request import AlphaVantageQuery
 
 
@@ -20,22 +23,37 @@ def main(source_args: argparse.Namespace):
         f"functions.{args.alpha_vantage_function}"
     )
     alpha_vantage_function = alpha_vantage_function_module.AlphaVantageFunction(
-        stock=args.stock
+        symbol=args.symbol
     )
 
     query: AlphaVantageQuery = AlphaVantageQuery(
         api_key=args.api_key, alpha_vantage_function=args.alpha_vantage_function
     )
     response: Response = query.get_request(params=alpha_vantage_function.params)
-    # To refactor
-    data = response.json()
-    with open("dummy.json", "w", encoding="utf-8") as dummy_file:
-        json.dump(data, dummy_file, indent=4)
+
+    csv_file_path: Path = csv_path_builder(
+        output_dir=OUTPUT_DIR,
+        alpha_vantage_function=args.alpha_vantage_function,
+        symbol=args.symbol,
+    )
+    dir_builder(output_path=OUTPUT_DIR)
+
+    if alpha_vantage_function.data_type == DataType.JSON:
+        json_data: dict = response.json()
+        # json.dump(json_data, csv_file, indent=4)
+        df: pd.DataFrame = alpha_vantage_function.transform_json(json_data=json_data)
+        alpha_vantage_function.export_df_to_csv(df=df, csv_file_path=csv_file_path)
+    elif alpha_vantage_function.data_type == DataType.CSV:
+        with open(csv_file_path, "w", encoding="utf-8") as csv_file:
+            writer = csv.writer(csv_file)
+            for line in response.iter_lines():
+                writer.writerow(line.decode("utf-8").split(","))
 
 
 if __name__ == "__main__":
     # Setting up directory using pathlib module
     PARENT_DIR: Path = Path(__file__).resolve().parent
+    OUTPUT_DIR: Path = Path(f"{PARENT_DIR}/output")
     # Logger setup
     logger: logging.Logger = log_setup(
         parent_dir=f"{PARENT_DIR}",
@@ -60,7 +78,11 @@ if __name__ == "__main__":
         help="API Key given from alpha vantage.",
     )
     parser.add_argument(
-        "-s", "--stock", type=str, required=True, help="Specify the target stock name.",
+        "-s",
+        "--symbol",
+        type=str,
+        required=True,
+        help="Specify the target stock symbol name.",
     )
     parser.add_argument(
         "-func",

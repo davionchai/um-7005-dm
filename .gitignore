@@ -156,3 +156,6 @@ trained_db/
 
 # Vscode stuff:
 .vscode/
+
+# Output dir
+/output
