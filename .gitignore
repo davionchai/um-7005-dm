@@ -158,4 +158,4 @@ trained_db/
 .vscode/
 
 # Output dir
-/output
+*/output
