@@ -23,12 +23,10 @@ def main(source_args: argparse.Namespace):
         f"functions.{args.alpha_vantage_function}"
     )
     alpha_vantage_function = alpha_vantage_function_module.AlphaVantageFunction(
-        symbol=args.symbol
+        symbol=args.symbol, alpha_vantage_function=args.alpha_vantage_function
     )
 
-    query: AlphaVantageQuery = AlphaVantageQuery(
-        api_key=args.api_key, alpha_vantage_function=args.alpha_vantage_function
-    )
+    query: AlphaVantageQuery = AlphaVantageQuery(api_key=args.api_key)
     response: Response = query.get_request(params=alpha_vantage_function.params)
 
     csv_file_path: Path = csv_path_builder(

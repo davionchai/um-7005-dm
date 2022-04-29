@@ -7,12 +7,14 @@ ROOT_URL = "https://www.alphavantage.co/query"
 
 
 class AlphaVantageQuery:
-    def __init__(self, api_key: str, alpha_vantage_function: str):
-        self.api_key = api_key
-        self.alpha_vantage_function = alpha_vantage_function.upper()
+    def __init__(self, api_key: str):
+        self.api_key: str = api_key
+
+    def switch_key(self, api_key: str):
+        self.api_key: str = api_key
 
     def get_request(self, params: dict) -> requests.models.Response:
-        params.update({"apikey": self.api_key, "function": self.alpha_vantage_function})
+        params.update({"apikey": self.api_key})
         try:
             response: requests.models.Response = requests.get(ROOT_URL, params=params)
         except requests.Timeout as error_timeout:
