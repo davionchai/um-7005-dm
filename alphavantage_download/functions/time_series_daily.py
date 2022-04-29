@@ -18,11 +18,13 @@ class OutputSize(StrEnum):
 class AlphaVantageFunction:
     def __init__(self, **kwargs) -> None:
         symbol: str = kwargs.get("symbol", None)
+        alpha_vantage_function: str = "TIME_SERIES_DAILY"
         self.data_type: DataType = DataType.JSON
         self.params: dict = {
             "outputsize": OutputSize.FULL,
             "datatype": self.data_type,
             "symbol": symbol,
+            "function": alpha_vantage_function,
         }
 
     def transform_json(self, json_data: dict) -> pd.DataFrame:
